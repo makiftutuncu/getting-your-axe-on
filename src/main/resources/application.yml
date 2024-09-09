@@ -1,0 +1,30 @@
+axon:
+  axonserver:
+    enabled: false
+  serializer:
+    general: jackson
+
+logging:
+  level:
+    dev.akif: DEBUG
+    org.axonframework: DEBUG
+    org.springframework: DEBUG
+    web: DEBUG
+
+spring:
+  application:
+    name: getting-your-axe-on
+  datasource:
+    url: jdbc:h2:mem:counters?DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: user
+    password: pass
+  docker:
+    compose:
+      enabled: false
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+  threads:
+    virtual:
+      enabled: true
