@@ -2,51 +2,37 @@ package dev.akif.gettingyouraxeon.counter
 
 import dev.akif.gettingyouraxeon.counter.api.*
 import dev.akif.gettingyouraxeon.counter.query.Counter
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.axonframework.extensions.reactor.commandhandling.gateway.ReactorCommandGateway
 import org.axonframework.extensions.reactor.queryhandling.gateway.ReactorQueryGateway
-import org.springframework.data.domain.Page
+import org.axonframework.messaging.responsetypes.ResponseTypes
 import org.springframework.stereotype.Service
-import java.util.UUID
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Service
 class CounterService(
     private val commands: ReactorCommandGateway,
     private val queries: ReactorQueryGateway
 ) {
-    suspend fun list(page: Int, size: Int): Page<Counter> =
+    fun list(page: Int, size: Int): Flux<Counter> =
         queries
-            .query(ListCountersQuery(page, size), Page::class.java)
-            .awaitSingle()
-            .map { it as Counter }
+            .query(ListCountersQuery(page, size), ResponseTypes.multipleInstancesOf(Counter::class.java))
+            .flatMapMany { Flux.fromIterable(it) }
 
-    suspend fun create(name: String): Counter =
-        commands
-            .send<Counter>(CreateCounterCommand(name))
-            .awaitSingle()
+    fun create(name: String): Mono<Void> =
+        commands.send<Any>(CreateCounterCommand(name)).then()
 
-    suspend fun get(id: UUID): Counter =
+    fun get(name: String): Mono<Counter> =
         queries
-            .query(GetCounterQuery(id), Counter::class.java)
-            .awaitSingleOrNull()
-            ?: throw CounterNotFoundException(id)
+            .query(GetCounterQuery(name), Counter::class.java)
+            .switchIfEmpty(Mono.error(CounterNotFoundException(name)))
 
-    suspend fun delete(id: UUID) {
-        commands
-            .send<Unit>(DeleteCounterCommand(id))
-            .awaitSingle()
-    }
+    fun delete(name: String): Mono<Void> =
+        commands.send(DeleteCounterCommand(name))
 
-    suspend fun change(id: UUID, adjustment: Int, name: String?): Counter =
-        commands
-            .send<Counter>(ChangeCounterCommand(id, name, adjustment))
-            .awaitSingle()
+    fun change(name: String, adjustment: CounterAdjustment): Mono<Counter> =
+        commands.send(ChangeCounterCommand(name, adjustment))
 
-    fun watch(id: UUID): Flow<Counter> =
-        queries
-            .streamingQuery(WatchCounterQuery(id), Counter::class.java)
-            .asFlow()
+    fun watch(name: String): Flux<Counter> =
+        queries.subscriptionQuery(WatchCounterQuery(name), Counter::class.java)
 }

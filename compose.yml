@@ -1,0 +1,22 @@
+services:
+  counters-db:
+    container_name: counters-db
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - counters-db:/var/lib/postgresql/data
+    environment:
+      - "POSTGRES_USER=counters-user"
+      - "POSTGRES_PASSWORD=counters-password"
+      - "POSTGRES_DB=counters-db"
+    networks:
+      - counters-network
+
+volumes:
+  counters-db:
+    driver: local
+
+networks:
+  counters-network:
+    driver: bridge

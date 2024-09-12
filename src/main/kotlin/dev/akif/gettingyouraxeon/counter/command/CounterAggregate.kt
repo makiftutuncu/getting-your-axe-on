@@ -7,29 +7,32 @@ import org.axonframework.extensions.kotlin.applyEvent
 import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.modelling.command.AggregateLifecycle.markDeleted
 import org.axonframework.spring.stereotype.Aggregate
-import java.util.UUID
 
 @Aggregate
 class CounterAggregate() {
     @AggregateIdentifier
-    private lateinit var id: UUID
+    private var name: String = ""
     private var value: Int = 0
 
     @CommandHandler
     constructor(command: CreateCounterCommand): this() {
-        applyEvent(CounterCreatedEvent(UUID.randomUUID(), command.name))
+        applyEvent(CounterCreatedEvent(command.name))
     }
 
     @EventSourcingHandler
     fun on(event: CounterCreatedEvent) {
-        id = event.id
+        name = event.name
     }
 
     @CommandHandler
     fun handle(command: ChangeCounterCommand) {
-        applyEvent(
-            CounterChangedEvent(id = id, oldValue = value, newValue = value + command.adjustment)
-        )
+        val newValue = command.adjustment.run {
+            when (type) {
+                AdjustmentType.Increment -> value + by
+                AdjustmentType.Decrement -> value - by
+            }
+        }
+        applyEvent(CounterChangedEvent(name, value, newValue))
     }
 
     @EventSourcingHandler
@@ -39,7 +42,7 @@ class CounterAggregate() {
 
     @CommandHandler
     fun handle(command: DeleteCounterCommand) {
-        applyEvent(CounterDeletedEvent(id))
+        applyEvent(CounterDeletedEvent(command.name))
     }
 
     @EventSourcingHandler

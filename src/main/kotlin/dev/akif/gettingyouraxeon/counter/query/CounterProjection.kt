@@ -1,57 +1,50 @@
 package dev.akif.gettingyouraxeon.counter.query
 
-import dev.akif.gettingyouraxeon.counter.api.CounterCreatedEvent
-import dev.akif.gettingyouraxeon.counter.api.GetCounterQuery
-import dev.akif.gettingyouraxeon.counter.api.ListCountersQuery
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.reactive.awaitFirstOrDefault
-import kotlinx.coroutines.reactive.awaitFirstOrElse
-import kotlinx.coroutines.reactive.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.coroutines.withContext
+import dev.akif.gettingyouraxeon.counter.api.*
 import org.axonframework.eventhandling.EventHandler
 import org.axonframework.queryhandling.QueryHandler
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
+import org.axonframework.queryhandling.QueryUpdateEmitter
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class CounterProjection(
-    private val counters: CounterRepository
+    private val counters: CounterRepository,
+    private val updates: QueryUpdateEmitter
 ) {
     @EventHandler
-    suspend fun on(event: CounterCreatedEvent) {
+    fun on(event: CounterCreatedEvent) {
         val now = Instant.now()
-        val counter = Counter(UUID.randomUUID(), event.name, 0, now, now)
+        val counter = counters.save(Counter(event.name, 0, now, now))
+        updates.emit<Counter>({ true }, counter)
+    }
 
-        withContext(Dispatchers.IO) {
-            counters
-                .save(counter)
-                .awaitSingle()
-        }
+    @EventHandler
+    fun on(event: CounterChangedEvent) {
+        val counter = counters.findById(event.name).orElseThrow { CounterNotFoundException(event.name) }
+        counter.value = event.newValue
+        counter.updatedAt = Instant.now()
+        val updated = counters.save(counter)
+        updates.emit<Counter>({ true }, updated)
+    }
+
+    @EventHandler
+    fun on(event: CounterDeletedEvent) {
+        counters.deleteById(event.name)
+        updates.emit<Counter>({ true }, null)
     }
 
     @QueryHandler
-    suspend fun handle(query: ListCountersQuery): Page<Counter> =
-        withContext(Dispatchers.IO) {
-            PageImpl(
-                counters
-                    .findAll()
-                    .buffer(query.size, query.page * query.size)
-                    .awaitFirstOrDefault(emptyList()),
-                PageRequest.of(query.page, query.size),
-                counters.count().awaitFirstOrElse { 0L }
-            )
-        }
+    fun handle(query: ListCountersQuery): List<Counter> =
+        counters.findAll(PageRequest.of(query.page, query.size)).content
 
     @QueryHandler
-    suspend fun handle(query: GetCounterQuery): Counter? =
-        withContext(Dispatchers.IO) {
-            counters
-                .findById(query.id)
-                .awaitSingleOrNull()
-        }
+    fun handle(query: GetCounterQuery): Counter? =
+        counters.findById(query.name).getOrNull()
+
+    @QueryHandler
+    fun handle(query: WatchCounterQuery): Counter? =
+        counters.findById(query.name).getOrNull()
 }
