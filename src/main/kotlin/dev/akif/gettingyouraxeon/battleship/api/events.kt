@@ -8,6 +8,10 @@ data class GameCreatedEvent(
     val timestamp: Instant
 )
 
+data class PlayerJoinedEvent(
+    val newGame: Game
+)
+
 data class ShipPlacedEvent(
     val newGame: Game
 )

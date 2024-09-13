@@ -1,9 +1,9 @@
 package dev.akif.gettingyouraxeon.battleship.api.model
 
 @JvmInline
-value class Board(private val cells: Array<Array<Cell>>) {
+value class Board(val cells: Array<Array<Cell>>) {
     companion object {
-        const val SIZE: Int = 8
+        const val SIZE: Int = 10
     }
 
     constructor() : this(Array(SIZE) { Array(SIZE) { Cell.Empty } })

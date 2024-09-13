@@ -19,7 +19,7 @@ data class Game(
             Game(
                 id = id,
                 board = Board(),
-                ships = mapOf(Player.A to emptyList(), Player.B to emptyList()),
+                ships = emptyMap(),
                 status = GameStatus.Created,
                 turn = Player.A,
                 winner = null,
@@ -28,6 +28,17 @@ data class Game(
                 startedAt = null,
                 finishedAt = null
             )
+    }
+
+    fun playerJoined(player: Player, now: Instant): Game {
+        require(status == GameStatus.Created) { "Cannot join game $id because it is not in created state" }
+
+        require(ships[player].isNullOrEmpty()) { "Cannot join game $id because player $player has already joined" }
+
+        return copy(
+            ships = ships + (player to emptyList()),
+            updatedAt = now
+        )
     }
 
     fun shipPlaced(player: Player, ship: PlacedShip, now: Instant): Game {

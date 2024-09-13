@@ -1,22 +1,22 @@
 services:
-  counters-db:
-    container_name: counters-db
+  battleships-db:
+    container_name: battleships-db
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - "25432:5432"
     volumes:
-      - counters-db:/var/lib/postgresql/data
+      - battleships-db:/var/lib/postgresql/data
     environment:
-      - "POSTGRES_USER=counters-user"
-      - "POSTGRES_PASSWORD=counters-password"
-      - "POSTGRES_DB=counters-db"
+      - "POSTGRES_USER=battleships-user"
+      - "POSTGRES_PASSWORD=battleships-password"
+      - "POSTGRES_DB=battleships-db"
     networks:
-      - counters-network
+      - battleships-network
 
 volumes:
-  counters-db:
+  battleships-db:
     driver: local
 
 networks:
-  counters-network:
+  battleships-network:
     driver: bridge

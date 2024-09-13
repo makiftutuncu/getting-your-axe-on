@@ -19,10 +19,10 @@ spring:
   application:
     name: getting-your-axe-on
   datasource:
-    url: jdbc:postgresql://localhost:5432/counters-db
+    url: jdbc:postgresql://localhost:25432/battleships-db
     driver-class-name: org.postgresql.Driver
-    username: counters-user
-    password: counters-password
+    username: battleships-user
+    password: battleships-password
   jpa:
     show-sql: false
     hibernate:

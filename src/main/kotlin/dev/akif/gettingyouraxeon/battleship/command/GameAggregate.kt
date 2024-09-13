@@ -3,7 +3,6 @@ package dev.akif.gettingyouraxeon.battleship.command
 import dev.akif.gettingyouraxeon.battleship.api.*
 import dev.akif.gettingyouraxeon.battleship.api.model.Game
 import org.axonframework.commandhandling.CommandHandler
-import org.axonframework.eventhandling.Timestamp
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.extensions.kotlin.applyEvent
 import org.axonframework.modelling.command.AggregateIdentifier
@@ -13,7 +12,7 @@ import java.time.Instant
 @Aggregate
 class GameAggregate() {
     @AggregateIdentifier
-    private var id: Long = 0
+    private var id: Long? = null
     private lateinit var game: Game
 
     @CommandHandler
@@ -27,6 +26,18 @@ class GameAggregate() {
     fun on(event: GameCreatedEvent) {
         id = event.id
         game = Game.created(event.id, event.timestamp)
+    }
+
+    @CommandHandler
+    fun handle(command: JoinGameCommand) {
+        val now = Instant.now()
+        val newGame = game.playerJoined(command.player, now)
+        applyEvent(PlayerJoinedEvent(newGame))
+    }
+
+    @EventSourcingHandler
+    fun on(event: PlayerJoinedEvent) {
+        game = event.newGame
     }
 
     @CommandHandler

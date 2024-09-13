@@ -9,3 +9,8 @@ data class PlaceShipRequest(
     val direction: Direction,
     val type: ShipType
 )
+
+data class Coordinates(
+    val x: Int,
+    val y: Int
+)

@@ -9,6 +9,12 @@ data class CreateGameCommand(
     val id: Long
 )
 
+data class JoinGameCommand(
+    @TargetAggregateIdentifier
+    val id: Long,
+    val player: Player
+)
+
 data class PlaceShipCommand(
     @TargetAggregateIdentifier
     val id: Long,

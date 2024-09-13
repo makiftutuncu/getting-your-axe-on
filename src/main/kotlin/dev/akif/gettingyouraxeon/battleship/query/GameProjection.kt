@@ -28,6 +28,11 @@ class GameProjection(private val updates: QueryUpdateEmitter) {
     }
 
     @EventHandler
+    fun on(event: PlayerJoinedEvent) {
+        event.update { it.newGame }
+    }
+
+    @EventHandler
     fun on(event: ShipPlacedEvent) {
         event.update { it.newGame }
     }
