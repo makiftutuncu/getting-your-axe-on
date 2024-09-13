@@ -20,6 +20,10 @@ class GameProjection(private val updates: QueryUpdateEmitter) {
     fun handle(query: GetGameQuery): Game? =
         games[query.id]
 
+    @QueryHandler
+    fun handle(query: ListGamesQuery): List<Game> =
+        games.values.sortedByDescending { it.createdAt }.toList()
+
     @EventHandler
     fun on(event: GameCreatedEvent) {
         val game = Game.created(event.id, event.timestamp)

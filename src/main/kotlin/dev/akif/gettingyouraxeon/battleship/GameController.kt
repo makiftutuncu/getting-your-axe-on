@@ -30,6 +30,11 @@ class GameController(private val games: GameService) {
     fun get(@PathVariable id: Long): Mono<GameResponse> =
         games.get(id).map { it.toResponse() }
 
+    @GetMapping
+    @Operation(summary = "List existing games")
+    fun list(): Flux<GameResponse> =
+        games.list().map { it.toResponse() }
+
     @Operation(summary = "Join game with given id as given player")
     @PutMapping("/{id}/players/{player}")
     fun join(

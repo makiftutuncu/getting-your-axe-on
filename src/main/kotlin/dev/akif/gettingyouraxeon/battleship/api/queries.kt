@@ -5,3 +5,5 @@ data object GetNextIdQuery
 data class GetGameQuery(
     val id: Long
 )
+
+data object ListGamesQuery

@@ -31,6 +31,11 @@ class GameService(
             .query(GetGameQuery(id), ResponseTypes.instanceOf(Game::class.java))
             .switchIfEmpty(Mono.error(GameNotFoundException(id)))
 
+    fun list(): Flux<Game> =
+        queries
+            .query(ListGamesQuery, ResponseTypes.multipleInstancesOf(Game::class.java))
+            .flatMapMany { Flux.fromIterable(it) }
+
     fun join(id: Long, player: Player): Flux<Game> =
         commands
             .send<Any>(JoinGameCommand(id, player))
