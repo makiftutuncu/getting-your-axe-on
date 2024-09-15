@@ -1,7 +1,6 @@
 package dev.akif.gettingyouraxeon.battleship.api.model
 
-@JvmInline
-value class Board(val cells: Array<Array<Cell>>) {
+data class Board(val cells: Array<Array<Cell>>) {
     companion object {
         const val SIZE: Int = 10
     }
@@ -47,11 +46,23 @@ value class Board(val cells: Array<Array<Cell>>) {
         }
 
         return Board(Array(SIZE) { j -> Array(SIZE) { i -> this[i, j] } }).apply {
-            this[x, y] = newCell
+            when (direction) {
+                Direction.Horizontal -> {
+                    for (i in x until x + size) {
+                        this[i, y] = newCell
+                    }
+                }
+
+                Direction.Vertical -> {
+                    for (j in y until y + size) {
+                        this[x, j] = newCell
+                    }
+                }
+            }
         }
     }
 
-    fun shot(player: Player, x: Int, y: Int): Board {
+    fun shot(player: Player, x: Int, y: Int): Pair<Board, Cell> {
         require(this[x, y] != Cell.Hit && this[x, y] != Cell.Miss) {
             "Player $player cannot shoot at ($x, $y) because it has already been shot"
         }
@@ -70,21 +81,46 @@ value class Board(val cells: Array<Array<Cell>>) {
             else -> Cell.Miss
         }
 
-        return Board(Array(SIZE) { j -> Array(SIZE) { i -> this[i, j] } }).apply {
+        val newBoard = Board(Array(SIZE) { j -> Array(SIZE) { i -> this[i, j] } }).apply {
             this[x, y] = newCell
         }
+
+        return newBoard to newCell
     }
 
-    override fun toString(): String =
-        (0 until SIZE).joinToString(separator = "\n") { y ->
-            (0 until SIZE).joinToString(separator = " ") { x ->
-                if (y == 0) {
-                    "${if (x == 0) "  " else ""}${x + 1}"
-                } else if (x == 0) {
-                    "  ${'A' + y - 1}"
-                } else {
-                    this[x, y].symbol.toString()
-                }
+    fun asPlayer(player: Player): Board =
+        copy(
+            cells = cells.map { row ->
+                row.map { cell ->
+                    when (cell) {
+                        Cell.ShipA -> if (player == Player.A) Cell.ShipA else Cell.Empty
+                        Cell.ShipB -> if (player == Player.B) Cell.ShipB else Cell.Empty
+                        else -> cell
+                    }
+                }.toTypedArray()
+            }.toTypedArray()
+        )
+
+    override fun toString(): String {
+        val firstLine = (0 until SIZE).joinToString(separator = " ", prefix = "  ") { "$it" }
+        val lines = (0 until SIZE).joinToString(separator = "\n") { y ->
+            (0 until SIZE).joinToString(separator = " ", prefix = "$y ") { x ->
+                this[x, y].symbol.toString()
             }
         }
+        return "$firstLine\n$lines"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Board) return false
+
+        if (!cells.contentDeepEquals(other.cells)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return cells.contentDeepHashCode()
+    }
 }

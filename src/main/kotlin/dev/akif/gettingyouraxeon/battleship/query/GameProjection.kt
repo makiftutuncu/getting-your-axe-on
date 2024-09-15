@@ -21,6 +21,10 @@ class GameProjection(private val updates: QueryUpdateEmitter) {
         games[query.id]
 
     @QueryHandler
+    fun handle(query: StreamGameQuery): Game? =
+        games[query.id]?.asPlayer(query.player)
+
+    @QueryHandler
     fun handle(query: ListGamesQuery): List<Game> =
         games.values.sortedByDescending { it.createdAt }.toList()
 

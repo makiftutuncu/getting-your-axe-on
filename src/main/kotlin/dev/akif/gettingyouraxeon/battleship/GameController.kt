@@ -7,8 +7,8 @@ import dev.akif.gettingyouraxeon.battleship.api.model.Game
 import dev.akif.gettingyouraxeon.battleship.api.model.Player
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -40,13 +40,16 @@ class GameController(private val games: GameService) {
     fun join(
         @PathVariable id: Long,
         @PathVariable player: Player
-    ): Flux<ServerSentEvent<GameResponse>> =
-        games.join(id, player).map {
-            ServerSentEvent
-                .builder(it.toResponse())
-                .id(it.id.toString())
-                .build()
-        }
+    ): Mono<Void> =
+        games.join(id, player)
+
+    @Operation(summary = "Stream game with given id as given player")
+    @GetMapping("/{id}/players/{player}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun stream(
+        @PathVariable id: Long,
+        @PathVariable player: Player
+    ): Flux<GameResponse> =
+        games.stream(id, player).map { it.toResponse() }
 
     @Operation(summary = "Place given ship as given player to game with given id")
     @PostMapping("/{id}/players/{player}/ships")

@@ -33,7 +33,7 @@ data class Game(
     fun playerJoined(player: Player, now: Instant): Game {
         require(status == GameStatus.Created) { "Cannot join game $id because it is not in created state" }
 
-        require(ships[player].isNullOrEmpty()) { "Cannot join game $id because player $player has already joined" }
+        require(player !in ships) { "Cannot join game $id because player $player has already joined" }
 
         return copy(
             ships = ships + (player to emptyList()),
@@ -84,19 +84,23 @@ data class Game(
 
         require(player == turn) { "Player $player cannot shoot because it is not their turn" }
 
-        val newBoard = board.shot(player, x, y)
+        val (newBoard, newCell) = board.shot(player, x, y)
 
         return copy(
             board = newBoard,
-            turn = if (turn == Player.A) Player.B else Player.A,
+            turn = if (newCell == Cell.Miss) {
+                if (turn == Player.A) Player.B else Player.A
+            } else {
+                turn
+            },
             updatedAt = now
         )
     }
 
-    fun winnerChecked(now: Instant): Game? {
+    fun getFinishedGame(now: Instant): Game? {
         val winner = when {
-            ships[Player.A].orEmpty().all { it.isSunken(board) } -> Player.B
-            ships[Player.B].orEmpty().all { it.isSunken(board) } -> Player.A
+            ships[Player.A]?.all { it.isSunken(board) } == true -> Player.B
+            ships[Player.B]?.all { it.isSunken(board) } == true -> Player.A
             else -> return null
         }
 
@@ -107,4 +111,18 @@ data class Game(
             finishedAt = now
         )
     }
+
+    fun asPlayer(player: Player): Game =
+        copy(
+            board = board.asPlayer(player),
+            ships = ships.filterKeys { it != player }
+        )
+
+    override fun toString(): String =
+        """
+        |
+        |$board
+        |id=$id, status=$status, turn=$turn, winner=$winner,
+        |c=$createdAt, u=$updatedAt, s=$startedAt, f=$finishedAt
+        |""".trimMargin()
 }

@@ -4,8 +4,7 @@ data class PlacedShip(
     val x: Int,
     val y: Int,
     val direction: Direction,
-    val type: ShipType,
-    val size: Int
+    val type: ShipType
 ) {
     fun isSunken(board: Board): Boolean =
         when (direction) {

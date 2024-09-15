@@ -7,7 +7,6 @@ import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.extensions.kotlin.applyEvent
 import org.axonframework.modelling.command.AggregateIdentifier
 import org.axonframework.spring.stereotype.Aggregate
-import java.time.Instant
 
 @Aggregate
 class GameAggregate() {
@@ -17,8 +16,7 @@ class GameAggregate() {
 
     @CommandHandler
     constructor(command: CreateGameCommand) : this() {
-        val now = Instant.now()
-        val event = GameCreatedEvent(command.id, now)
+        val event = GameCreatedEvent(command.id, command.timestamp)
         applyEvent(event)
     }
 
@@ -30,8 +28,7 @@ class GameAggregate() {
 
     @CommandHandler
     fun handle(command: JoinGameCommand) {
-        val now = Instant.now()
-        val newGame = game.playerJoined(command.player, now)
+        val newGame = game.playerJoined(command.player, command.timestamp)
         applyEvent(PlayerJoinedEvent(newGame))
     }
 
@@ -42,8 +39,7 @@ class GameAggregate() {
 
     @CommandHandler
     fun handle(command: PlaceShipCommand) {
-        val now = Instant.now()
-        val newGame = game.shipPlaced(command.player, command.ship, now)
+        val newGame = game.shipPlaced(command.player, command.ship, command.timestamp)
         applyEvent(ShipPlacedEvent(newGame))
     }
 
@@ -54,8 +50,7 @@ class GameAggregate() {
 
     @CommandHandler
     fun handle(command: StartGameCommand) {
-        val now = Instant.now()
-        val newGame = game.started(now)
+        val newGame = game.started(command.timestamp)
         applyEvent(GameStartedEvent(newGame))
     }
 
@@ -66,11 +61,10 @@ class GameAggregate() {
 
     @CommandHandler
     fun handle(command: ShootCommand) {
-        val now = Instant.now()
-        val newGame = game.shot(command.player, command.x, command.y, now)
+        val newGame = game.shot(command.player, command.x, command.y, command.timestamp)
         applyEvent(ShotEvent(newGame))
 
-        val finishedGame = newGame.winnerChecked(now)
+        val finishedGame = newGame.getFinishedGame(command.timestamp)
         if (finishedGame != null) {
             applyEvent(GameFinishedEvent(finishedGame))
         }
