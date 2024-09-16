@@ -4,6 +4,7 @@ import dev.akif.gettingyouraxeon.battleship.api.model.*
 import java.time.Instant
 
 data class GameResponse(
+    val id: Long,
     val rendered: String,
     val board: List<List<Char>>,
     val ships: Map<Player, List<PlacedShip>>,

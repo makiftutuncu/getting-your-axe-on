@@ -9,7 +9,7 @@ class CorsConfiguration : WebFluxConfigurer {
     override fun addCorsMappings(corsRegistry: CorsRegistry) {
         corsRegistry
             .addMapping("/**")
-            .allowedOrigins("http://localhost:8080", "http://localhost:3000")
+            .allowedOrigins("http://localhost:8080", "http://localhost:3000", "http://localhost:5173")
             .allowedMethods("*")
     }
 }

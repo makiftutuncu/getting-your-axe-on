@@ -79,6 +79,7 @@ class GameController(private val games: GameService) {
             .map { it.toResponse() }
 
     private fun Game.toResponse() = GameResponse(
+        id = id,
         rendered = board.toString(),
         board = board.cells.map { it.map { c -> c.symbol } },
         ships = ships,
