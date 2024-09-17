@@ -4,7 +4,7 @@ import java.time.Instant
 
 data class Game(
     val id: Long,
-    val board: Board,
+    val boards: Map<Player, Board>,
     val ships: Map<Player, List<PlacedShip>>,
     val status: GameStatus,
     val turn: Player,
@@ -18,7 +18,7 @@ data class Game(
         fun created(id: Long, now: Instant): Game =
             Game(
                 id = id,
-                board = Board(),
+                boards = emptyMap(),
                 ships = emptyMap(),
                 status = GameStatus.Created,
                 turn = Player.A,
@@ -30,12 +30,15 @@ data class Game(
             )
     }
 
+    operator fun get(player: Player, x: Int, y: Int): Cell = boards.getValue(player)[x, y]
+
     fun playerJoined(player: Player, now: Instant): Game {
         require(status == GameStatus.Created) { "Cannot join game $id because it is not in created state" }
 
-        require(player !in ships) { "Cannot join game $id because player $player has already joined" }
+        require(player !in boards) { "Cannot join game $id because player $player has already joined" }
 
         return copy(
+            boards = boards + (player to Board()),
             ships = ships + (player to emptyList()),
             updatedAt = now
         )
@@ -50,11 +53,11 @@ data class Game(
             "Cannot place ${ship.type} for player $player because it is already placed"
         }
 
-        val newBoard = board.shipPlaced(player, ship)
+        val newBoards = boards[player]?.let { boards + (player to it.shipPlaced(player, ship)) } ?: boards
         val newShips = ships + (player to (ships[player].orEmpty() + ship))
 
         return copy(
-            board = newBoard,
+            boards = newBoards,
             ships = newShips,
             updatedAt = now
         )
@@ -84,44 +87,47 @@ data class Game(
 
         require(player == turn) { "Player $player cannot shoot because it is not their turn" }
 
-        val (newBoard, newCell) = board.shot(player, x, y)
+        val otherPlayer = if (player == Player.A) Player.B else Player.A
 
-        return copy(
-            board = newBoard,
-            turn = if (newCell == Cell.Miss) {
+        val (newBoards, newTurn) = boards[otherPlayer]?.let {
+            val (newBoard, newCell) = it.shot(player, x, y)
+            val newBoards = boards + (otherPlayer to newBoard)
+            val newTurn = if (newCell == Cell.Miss) {
                 if (turn == Player.A) Player.B else Player.A
             } else {
                 turn
-            },
+            }
+            newBoards to newTurn
+        } ?: (boards to turn)
+
+        return copy(
+            boards = newBoards,
+            turn = newTurn,
             updatedAt = now
         )
     }
 
-    fun getFinishedGame(now: Instant): Game? {
-        val winner = when {
-            ships[Player.A]?.all { it.isSunken(board) } == true -> Player.B
-            ships[Player.B]?.all { it.isSunken(board) } == true -> Player.A
-            else -> return null
-        }
-
-        return copy(
-            status = GameStatus.Finished,
-            winner = winner,
-            updatedAt = now,
-            finishedAt = now
-        )
-    }
-
-    fun asPlayer(player: Player): Game =
-        copy(
-            board = board.asPlayer(player),
-            ships = ships.filterKeys { it != player }
-        )
+    fun getFinishedGame(now: Instant): Game? =
+        Player
+            .entries
+            .firstOrNull { player ->
+                boards[player]?.let { board -> ships[player]?.all { it.isSunken(board) } } == true
+            }
+            ?.other
+            ?.let { winner ->
+                copy(
+                    status = GameStatus.Finished,
+                    winner = winner,
+                    updatedAt = now,
+                    finishedAt = now
+                )
+            }
 
     override fun toString(): String =
         """
         |
-        |$board
+        |A=${boards[Player.A]}
+        |B=${boards[Player.B]}
         |id=$id, status=$status, turn=$turn, winner=$winner,
         |c=$createdAt, u=$updatedAt, s=$startedAt, f=$finishedAt
         |""".trimMargin()

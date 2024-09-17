@@ -7,9 +7,7 @@ axon:
 logging:
   level:
     dev.akif: DEBUG
-    org.axonframework: DEBUG
-    org.springframework: INFO
-    web: INFO
+    root: INFO
 
 server:
   error:

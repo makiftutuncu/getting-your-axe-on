@@ -30,10 +30,10 @@ class GameController(private val games: GameService) {
     fun get(@PathVariable id: Long): Mono<GameResponse> =
         games.get(id).map { it.toResponse() }
 
-    @GetMapping
-    @Operation(summary = "List existing games")
-    fun list(): Flux<GameResponse> =
-        games.list().map { it.toResponse() }
+    @GetMapping(produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    @Operation(summary = "Stream existing games")
+    fun streamGames(): Flux<List<GameResponse>> =
+        games.streamGames().map { games -> games.map { it.toResponse() } }
 
     @Operation(summary = "Join game with given id as given player")
     @PutMapping("/{id}/players/{player}")
@@ -43,13 +43,12 @@ class GameController(private val games: GameService) {
     ): Mono<Void> =
         games.join(id, player)
 
-    @Operation(summary = "Stream game with given id as given player")
-    @GetMapping("/{id}/players/{player}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun stream(
-        @PathVariable id: Long,
-        @PathVariable player: Player
+    @Operation(summary = "Stream game with given id")
+    @GetMapping("/{id}", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun streamGame(
+        @PathVariable id: Long
     ): Flux<GameResponse> =
-        games.stream(id, player).map { it.toResponse() }
+        games.streamGame(id).map { it.toResponse() }
 
     @Operation(summary = "Place given ship as given player to game with given id")
     @PostMapping("/{id}/players/{player}/ships")
@@ -80,8 +79,7 @@ class GameController(private val games: GameService) {
 
     private fun Game.toResponse() = GameResponse(
         id = id,
-        rendered = board.toString(),
-        board = board.cells.map { it.map { c -> c.symbol } },
+        boards = boards.mapValues { it.value.cells.map { row -> row.map { c -> c.symbol } } },
         ships = ships,
         status = status,
         turn = turn,

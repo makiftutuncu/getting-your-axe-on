@@ -14,7 +14,7 @@ class GameTest {
     fun `creating a game creates an empty board`() {
         val game = Game.created(1, now)
 
-        assertTrue(game.board.cells.all { row -> row.all { cell -> cell == Cell.Empty } })
+        assertTrue(game.boards.isEmpty())
         assertEquals(emptyMap(), game.ships)
         assertEquals(GameStatus.Created, game.status)
         assertEquals(now, game.createdAt)
@@ -89,12 +89,13 @@ class GameTest {
             val ship = PlacedShip(0, 0, Direction.Horizontal, ShipType.Battleship)
             val game = Game
                 .created(1, now)
+                .playerJoined(Player.A, now)
                 .shipPlaced(Player.A, ship, now.plusSeconds(1))
 
-            assertEquals(Cell.ShipA, game.board[0, 0])
-            assertEquals(Cell.ShipA, game.board[1, 0])
-            assertEquals(Cell.ShipA, game.board[2, 0])
-            assertEquals(Cell.ShipA, game.board[3, 0])
+            assertEquals(Cell.ShipA, game[Player.A, 0, 0])
+            assertEquals(Cell.ShipA, game[Player.A, 1, 0])
+            assertEquals(Cell.ShipA, game[Player.A, 2, 0])
+            assertEquals(Cell.ShipA, game[Player.A, 3, 0])
             assertEquals(listOf(ship), game.ships[Player.A])
             assertEquals(now.plusSeconds(1), game.updatedAt)
         }
@@ -172,15 +173,19 @@ class GameTest {
 
             @Test
             fun `cell has already been shot`() {
-                val game = Game
+                val joinedGame = Game
                     .created(1, now)
+                    .playerJoined(Player.A, now)
+                val game = joinedGame
                     .copy(
                         status = GameStatus.Started,
                         turn = Player.B,
-                        board = Board()
-                            .shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
-                            .shot(Player.B, 0, 0)
-                            .first
+                        boards = joinedGame.boards + (
+                                Player.A to Board()
+                                    .shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
+                                    .shot(Player.B, 0, 0)
+                                    .first
+                                )
                     )
 
                 assertThrows<IllegalArgumentException> {
@@ -189,52 +194,46 @@ class GameTest {
                     assertEquals("Player B cannot shoot at (0, 0) because it has already been shot", message)
                 }
             }
-
-            @Test
-            fun `cell has player's own ship`() {
-                val game = Game
-                    .created(1, now)
-                    .copy(
-                        status = GameStatus.Started,
-                        board = Board().shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
-                    )
-
-                assertThrows<IllegalArgumentException> {
-                    game.shot(Player.A, 0, 0, now)
-                }.apply {
-                    assertEquals("Player A cannot shoot at (0, 0) because they have a ship there", message)
-                }
-            }
         }
 
         @Test
         fun `hit a ship and keep their turn`() {
-            val game = Game
+            val joinedGame = Game
                 .created(1, now)
+                .playerJoined(Player.A, now)
+            val game = joinedGame
                 .copy(
                     status = GameStatus.Started,
                     turn = Player.B,
-                    board = Board().shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
+                    boards = joinedGame.boards + (
+                            Player.A to Board()
+                                .shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
+                            )
                 )
                 .shot(Player.B, 0, 0, now.plusSeconds(1))
 
-            assertEquals(Cell.Hit, game.board[0, 0])
+            assertEquals(Cell.Hit, game[Player.A, 0, 0])
             assertEquals(now.plusSeconds(1), game.updatedAt)
             assertEquals(Player.B, game.turn)
         }
 
         @Test
         fun `miss a ship and lose their turn`() {
-            val game = Game
+            val joinedGame = Game
                 .created(1, now)
+                .playerJoined(Player.A, now)
+            val game = joinedGame
                 .copy(
                     status = GameStatus.Started,
                     turn = Player.B,
-                    board = Board().shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
+                    boards = joinedGame.boards + (
+                            Player.A to Board()
+                                .shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
+                            )
                 )
                 .shot(Player.B, 0, 1, now.plusSeconds(1))
 
-            assertEquals(Cell.Miss, game.board[0, 1])
+            assertEquals(Cell.Miss, game[Player.A, 0, 1])
             assertEquals(now.plusSeconds(1), game.updatedAt)
             assertEquals(Player.A, game.turn)
         }
@@ -253,6 +252,8 @@ class GameTest {
         fun `return the game with the winner if there is one`() {
             val game = Game
                 .created(1, now)
+                .playerJoined(Player.A, now)
+                .playerJoined(Player.B, now)
                 .shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.PatrolBoat), now)
                 .shipPlaced(Player.B, PlacedShip(0, 1, Direction.Horizontal, ShipType.PatrolBoat), now)
                 .copy(

@@ -21,18 +21,15 @@ class GameProjection(private val updates: QueryUpdateEmitter) {
         games[query.id]
 
     @QueryHandler
-    fun handle(query: StreamGameQuery): Game? =
-        games[query.id]?.asPlayer(query.player)
-
-    @QueryHandler
-    fun handle(query: ListGamesQuery): List<Game> =
-        games.values.sortedByDescending { it.createdAt }.toList()
+    fun handle(query: StreamGamesQuery): List<Game> =
+        gameList()
 
     @EventHandler
     fun on(event: GameCreatedEvent) {
         val game = Game.created(event.id, event.timestamp)
         games[event.id] = game
         updates.emit<GetGameQuery, Game>(GetGameQuery::class.java, { it.id == event.id }, game)
+        updates.emit<StreamGamesQuery, List<Game>>(StreamGamesQuery::class.java, { true }, gameList())
     }
 
     @EventHandler
@@ -68,5 +65,9 @@ class GameProjection(private val updates: QueryUpdateEmitter) {
         }
         games[id] = newGame
         updates.emit<GetGameQuery, Game>(GetGameQuery::class.java, { it.id == id }, newGame)
+        updates.emit<StreamGamesQuery, List<Game>>(StreamGamesQuery::class.java, { true }, gameList())
     }
+
+    private fun gameList(): List<Game> =
+        games.values.sortedByDescending { it.createdAt }.toList()
 }

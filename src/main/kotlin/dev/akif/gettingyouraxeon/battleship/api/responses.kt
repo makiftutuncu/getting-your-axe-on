@@ -5,8 +5,7 @@ import java.time.Instant
 
 data class GameResponse(
     val id: Long,
-    val rendered: String,
-    val board: List<List<Char>>,
+    val boards: Map<Player, List<List<Char>>>,
     val ships: Map<Player, List<PlacedShip>>,
     val status: GameStatus,
     val turn: Player,

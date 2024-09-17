@@ -22,7 +22,7 @@ data class Board(val cells: Array<Array<Cell>>) {
 
         when (direction) {
             Direction.Horizontal -> {
-                require(x + size < SIZE) {
+                require(x + size <= SIZE) {
                     "Cannot place ${type.name} horizontally at ($x, $y) because it does not fit"
                 }
                 require((x until (x + size)).all { this[it, y] == Cell.Empty }) {
@@ -31,7 +31,7 @@ data class Board(val cells: Array<Array<Cell>>) {
             }
 
             Direction.Vertical -> {
-                require(y + size < SIZE) {
+                require(y + size <= SIZE) {
                     "Cannot place ${type.name} vertically at ($x, $y) because it does not fit"
                 }
                 require((y until (y + size)).all { this[x, it] == Cell.Empty }) {
@@ -87,19 +87,6 @@ data class Board(val cells: Array<Array<Cell>>) {
 
         return newBoard to newCell
     }
-
-    fun asPlayer(player: Player): Board =
-        copy(
-            cells = cells.map { row ->
-                row.map { cell ->
-                    when (cell) {
-                        Cell.ShipA -> if (player == Player.A) Cell.ShipA else Cell.Empty
-                        Cell.ShipB -> if (player == Player.B) Cell.ShipB else Cell.Empty
-                        else -> cell
-                    }
-                }.toTypedArray()
-            }.toTypedArray()
-        )
 
     override fun toString(): String {
         val firstLine = (0 until SIZE).joinToString(separator = " ", prefix = "  ") { "$it" }
