@@ -159,7 +159,12 @@ const GamePage = () => {
         {renderAlert()}
 
         {game.status === GameStatus.Finished && (
-            <Button variant="contained" sx={{ mt: 2 }} onClick={() => window.open("/")}>Back to games</Button>
+            <Button
+                variant="contained"
+                sx={{ mt: 2 }}
+                onClick={() => { location.href = "/" }}>
+                Back to games
+            </Button>
         )}
 
         {game.status === GameStatus.Created && (

@@ -7,7 +7,8 @@ type Props = {
     game: Game
 }
 
-const playerToUse = (game: Game): Player => game.boards[Player.A] === undefined ? Player.B : Player.A
+const playerToUse = (game: Game): Player =>
+    game.boards[Player.A] === undefined ? Player.A : Player.B
 
 const GameCard = ({ game }: Props) => {
     const date = (d: Date): string => d.toString()
@@ -69,7 +70,7 @@ const GameCard = ({ game }: Props) => {
                 {game.status === GameStatus.Created && Object.keys(game.boards).length < 2 && (
                     <Button onClick={() => {
                         const player = playerToUse(game)
-                        window.open(`/games/${game.id}/players/${player}`, "_blank")
+                        window.open(`/games/${game.id}/players/${player}`)
                     }}>Join</Button>
                 )}
             </CardActions>

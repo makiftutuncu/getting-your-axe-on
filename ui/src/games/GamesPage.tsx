@@ -25,7 +25,7 @@ const GamesPage = () => {
             variant="extended"
             color="primary"
             sx={{ position: 'fixed', bottom: 0, left: "auto", right: 0, mb: 4, mr: 4 }}
-            onClick={() => api.create().then((id) => window.open(`/games/${id}/players/${Player.A}`, "_blank"))}>
+            onClick={() => api.create().then((id) => window.open(`/games/${id}/players/${Player.A}`))}>
             New game
         </Fab>
     </Box>
