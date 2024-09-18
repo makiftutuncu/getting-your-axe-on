@@ -15,7 +15,7 @@ const GamesPage = () => {
         {(games.length === 0) ? (
             <Typography variant="h5" textAlign="center">There are no games yet.</Typography>
         ) : <>
-            <Typography variant="h4" textAlign="center">Games</Typography>
+            <Typography variant="h5" textAlign="center">Games</Typography>
             <Grid container spacing={1} size="auto" justifyContent="center">
                 {games.map((game) => (<GameCard key={game.id} game={game} />))}
             </Grid>

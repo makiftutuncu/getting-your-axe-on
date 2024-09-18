@@ -3,13 +3,13 @@ import { Direction } from "../api/Direction";
 import { api } from "../api/GameAPI";
 import { GameStatus } from "../api/GameStatus";
 import { useLoaderData } from "react-router-dom";
-import { Player } from "../api/Player";
+import { Player, playerShips } from "../api/Player";
 import Board from "./Board";
 import { GamePageLoaderData } from "./loader";
 import { Game } from "../api/Game";
 import { ShipType, shipTypeSizes } from "../api/ShipType";
 import { AxiosError } from "axios";
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Alert, Box, Button, ButtonGroup, Card, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
+import { Alert, Box, Button, ButtonGroup, Card, CardContent, FormControlLabel, FormGroup, Stack, Switch, Typography } from "@mui/material";
 
 const GamePage = () => {
     const { player, ...loadedData } = useLoaderData() as GamePageLoaderData;
@@ -124,11 +124,38 @@ const GamePage = () => {
     }
 
     return <>
-        <Typography variant="h4" textAlign="center">Game #{game.id} - Player {player}</Typography>
+        <Typography variant="h5" textAlign="center">Game #{game.id} - Player {player} {playerShips[player]}</Typography>
 
-        <Box sx={{ display: "flex", flexDirection: "row" }}>
+        {renderAlert()}
+
+        {game.status === GameStatus.Created && canStartGame() && (
+            <Button variant="contained" sx={{ mt: 2 }} onClick={() => api.start(game.id)}>Start game</Button>
+        )}
+
+        {game.status === GameStatus.Finished && (
+            <Button
+                variant="contained"
+                sx={{ mt: 2 }}
+                onClick={() => { location.href = "/" }}>
+                Back to games
+            </Button>
+        )}
+
+        <Stack direction="column" >
+            {game.status !== GameStatus.Created && (
+                <Card sx={{ m: 2, flex: 1, opacity: (game.status === GameStatus.Started && game.turn === player) || game.status === GameStatus.Finished ? 1 : 0.5 }}>
+                    <Typography variant="h5" textAlign="center">Opponent's Board</Typography>
+                    <Board
+                        game={game}
+                        player={otherPlayer}
+                        isOpponent={true}
+                        onClick={shoot}
+                        getContent={(cell) => cell === "X" || cell === "O" ? cell : " "}
+                        isSelected={(x, y) => game.boards[otherPlayer] && (game.boards[otherPlayer][y][x] === "X" || game.boards[otherPlayer][y][x] === "O")} />
+                </Card>
+            )}
             <Card sx={{ m: 2, flex: 1, opacity: game.status === GameStatus.Created || game.status === GameStatus.Finished || game.turn === otherPlayer ? 1 : 0.5 }}>
-                <Typography variant="h4" textAlign="center">Your Board</Typography>
+                <Typography variant="h5" textAlign="center">Your Board</Typography>
                 <Board
                     game={game}
                     player={player}
@@ -140,69 +167,44 @@ const GamePage = () => {
                         : (game.boards[player] && (game.boards[player][y][x] === "X" || game.boards[player][y][x] === "O"))
                     } />
             </Card>
-            <Card sx={{ m: 2, flex: 1, opacity: (game.status === GameStatus.Started && game.turn === player) || game.status === GameStatus.Finished ? 1 : 0.5 }}>
-                <Typography variant="h4" textAlign="center">Opponent's Board</Typography>
-                <Board
-                    game={game}
-                    player={otherPlayer}
-                    isOpponent={true}
-                    onClick={shoot}
-                    getContent={(cell) => cell === "X" || cell === "O" ? cell : " "}
-                    isSelected={(x, y) => game.boards[otherPlayer] && (game.boards[otherPlayer][y][x] === "X" || game.boards[otherPlayer][y][x] === "O")} />
-            </Card>
-        </Box>
+        </Stack>
 
-        {game.status === GameStatus.Created && canStartGame() && (
-            <Button variant="contained" sx={{ mt: 2 }} onClick={() => api.start(game.id)}>Start game</Button>
-        )}
-
-        {renderAlert()}
-
-        {game.status === GameStatus.Finished && (
-            <Button
-                variant="contained"
-                sx={{ mt: 2 }}
-                onClick={() => { location.href = "/" }}>
-                Back to games
-            </Button>
-        )}
-
-        {game.status === GameStatus.Created && (
-            <Accordion expanded={placingShips} sx={{ mt: 2 }}>
-                <AccordionSummary id="place-ship-panel">
-                    <Typography variant="h5">
-                        {placingShips ? "Place Your Ship" : `Your Ships (${(game.ships[player] || []).length}/5)`}
+        {game.status === GameStatus.Created && (game.ships[player] || []).length < 5 && (
+            <Box sx={{ mt: 2, display: "flex", flexDirection: "column" }}>
+                {!placingShips && (
+                    <Typography variant="h5" textAlign="center">
+                        Your Ships ({(game.ships[player] || []).length}/5)
                     </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ display: "flex", justifyContent: "center" }}>
-                    <FormGroup>
+                )}
+                {placingShips && (
+                    <FormGroup sx={{ alignSelf: "center" }}>
                         <FormControlLabel
                             control={
                                 <Switch
                                     checked={direction === Direction.Horizontal}
                                     onChange={() => setDirection(direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal)} />
                             }
-                            label={direction === Direction.Horizontal ? "Horizontally" : "Vertically"} />
+                            label={direction === Direction.Horizontal ? "Place Your Ship Horizontally" : "Place Your Ship Vertically"} />
                     </FormGroup>
-                    <ButtonGroup>
-                        {Object.keys(ShipType).map((type) => (
+                )}
+                <CardContent sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                    <ButtonGroup orientation="vertical">
+                        {(placingShips ? (
+                            Object.keys(ShipType).filter((type) => game.ships[player]?.find((ship) => ship.type === type) === undefined)
+                        ) : (
+                            Object.keys(ShipType).filter((type) => game.ships[player]?.find((ship) => ship.type === type) !== undefined)
+                        )).map((type) => (
                             <Button
                                 key={type}
                                 variant="outlined"
-                                disabled={game.ships[player]?.find((ship) => ship.type === type) !== undefined}
+                                disabled={!placingShips}
                                 onClick={() => placeShip(selectedLocation[0], selectedLocation[1], direction, type as ShipType)}>
                                 {type} ({shipTypeSizes[type as ShipType]})
                             </Button>
                         ))}
                     </ButtonGroup>
-                </AccordionDetails>
-                <AccordionActions>
-                    <Button onClick={() => {
-                        setPlacingShips(false)
-                        setSelectedLocation([-1, -1])
-                    }}>Cancel</Button>
-                </AccordionActions>
-            </Accordion>
+                </CardContent>
+            </Box>
         )}
     </>
 }

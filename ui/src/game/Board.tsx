@@ -15,7 +15,7 @@ type Props = {
 
 const Board = ({ game, player, isOpponent, onClick, isSelected }: Props) => {
     return <TableContainer>
-        <Table>
+        <Table size="small" padding="none">
             <TableHead>
                 <TableRow>
                     <Cell x={-1} y={-1} content="" />

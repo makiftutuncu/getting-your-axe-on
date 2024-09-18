@@ -1,5 +1,6 @@
 import { TableCell } from "@mui/material"
 import { blueGrey } from "@mui/material/colors"
+import { Player, playerShips } from "../api/Player"
 
 type Props = {
     x: number
@@ -11,8 +12,8 @@ type Props = {
 }
 
 const symbols = {
-    "A": "🚢",
-    "B": "⛴️",
+    "A": playerShips[Player.A],
+    "B": playerShips[Player.B],
     "X": "💥",
     "O": "❌",
 }

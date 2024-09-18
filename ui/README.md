@@ -1,50 +1,35 @@
-# React + TypeScript + Vite
+# Battleships Game
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Table of Contents
 
-Currently, two official plugins are available:
+1. [Introduction](#introduction)
+2. [Configuration](#configuration)
+3. [Local Development](#local-development)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Introduction
 
-## Expanding the ESLint configuration
+Battleships Game is a web application to play the Battleships game.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+It uses
 
-- Configure the top-level `parserOptions` property like this:
+* Vite for build tool
+* React for frontend
+* TypeScript for programming language
+* Material-UI for UI components
+* Axios for HTTP requests
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Configuration
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Configuration can be modified via [.env](.env) and [.env.local](.env.local) files or following environment variables.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+| Variable Name | Data Type | Description                        |
+|---------------|-----------|------------------------------------|
+| VITE_API_URL  | String    | Base URL for game server           |
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Local Development
+
+You'll need [node](https://nodejs.org) installed. Then you can use following npm tasks
+
+* `npm install` to install dependencies
+* `npm run dev` to run the application in development mode
+* `npm run build` to build the application for production
