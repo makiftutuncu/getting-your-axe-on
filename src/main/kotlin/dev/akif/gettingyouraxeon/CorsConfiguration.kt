@@ -9,7 +9,12 @@ class CorsConfiguration : WebFluxConfigurer {
     override fun addCorsMappings(corsRegistry: CorsRegistry) {
         corsRegistry
             .addMapping("/**")
-            .allowedOrigins("http://localhost:8080", "http://localhost:3000", "http://localhost:5173")
+            .allowedOrigins(
+                "http://localhost:8080",
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "https://proud-water-0d3160903.5.azurestaticapps.net"
+            )
             .allowedMethods("*")
             .exposedHeaders("*")
     }
