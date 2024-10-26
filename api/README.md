@@ -5,8 +5,7 @@
 1. [Introduction](#introduction)
 2. [Configuration](#configuration)
 3. [Local Development](#local-development)
-4. [Docker](#docker)
-5. [API](#api-docs)
+4. [API](#api-docs)
 
 ## Introduction
 
@@ -38,19 +37,12 @@ Configuration can be modified via [application.yml](src/main/resources/applicati
 ## Local Development
 
 Java 21+ is required. You can use Maven tasks like `clean`, `compile`, `install` and `test` for local development. To run the application:
+
 ```shell
 mvn spring-boot:run
 ```
 
 If you don't have Maven installed, you can replace `mvn` commands with `./mvnw` to use Maven wrapper.
-
-## Docker
-
-Database for Battleships API can be run in Docker. To run using Docker Compose:
-
-```shell
-docker compose up -d
-```
 
 ## API Docs
 
