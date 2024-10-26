@@ -23,7 +23,7 @@
 
         <axon.version>4.10.2</axon.version>
         <springdoc-openapi-starter.version>2.2.0</springdoc-openapi-starter.version>
-        <postgresql.version>42.7.3</postgresql.version>
+        <postgresql.version>42.7.4</postgresql.version>
     </properties>
 
     <dependencyManagement>
