@@ -1,0 +1,31 @@
+axon:
+  axonserver:
+    enabled: false
+  serializer:
+    general: jackson
+
+logging:
+  level:
+    dev.akif: DEBUG
+    root: INFO
+
+server:
+  error:
+    include-stacktrace: never
+
+spring:
+  application:
+    name: battleships-api
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:battleships-db}?${DB_PARAMS:}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:battleships-user}
+    password: ${DB_PASSWORD:battleships-password}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+  threads:
+    virtual:
+      enabled: true
