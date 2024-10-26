@@ -1,0 +1,33 @@
+name: Build battleships-ui
+
+on:
+  push:
+    branches:
+      - '*'
+    paths:
+      - 'ui/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          cache-dependency-path: ui/package-lock.json
+          node-version: 23
+          cache: 'npm'
+      - name: Install dependencies
+        working-directory: ui
+        run: 'npm install'
+        continue-on-error: true
+      - name: Build
+        working-directory: ui
+        run: 'npm run build'

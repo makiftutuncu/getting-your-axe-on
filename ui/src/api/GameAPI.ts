@@ -5,7 +5,7 @@ import { Player } from "./Player";
 import { Ship } from "./Ship";
 
 interface GameAPI {
-    create: () => Promise<number>
+    create: () => Promise<Game>
     list: (onUpdate: (games: Game[]) => void) => () => void
     get: (id: number) => Promise<Game>
     join: (id: number, player: Player) => Promise<void>
@@ -22,7 +22,7 @@ const http = axios.create({ baseURL: BASE_URL });
 export const api: GameAPI = {
     create: async () => {
         const response = await http.post<Game>("/games");
-        return response.headers["location"].split("/").pop();
+        return response.data;
     },
 
     list: (onUpdate) => {

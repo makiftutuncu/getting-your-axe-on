@@ -11,6 +11,9 @@ const GamesPage = () => {
 
     useEffect(() => api.list((newGames) => setGames(newGames)), []);
 
+    const playerToUse = (game: Game): Player =>
+        game.boards[Player.A] === undefined ? Player.A : Player.B
+
     return <Box display="flex" flexDirection="column">
         {(games.length === 0) ? (
             <Typography variant="h5" textAlign="center">There are no games yet.</Typography>
@@ -25,7 +28,10 @@ const GamesPage = () => {
             variant="extended"
             color="primary"
             sx={{ position: 'fixed', bottom: 0, left: "auto", right: 0, mb: 4, mr: 4 }}
-            onClick={() => api.create().then((id) => window.open(`/games/${id}/players/${Player.A}`))}>
+            onClick={() => api.create().then((game) => {
+                const player = playerToUse(game);
+                window.open(`/games/${game.id}/players/${player}`)
+            })}>
             New game
         </Fab>
     </Box>
