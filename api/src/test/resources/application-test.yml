@@ -1,4 +1,4 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:16-alpine:///${DB_NAME:battleships-db}?${DB_PARAMS:}
+    url: jdbc:tc:postgresql:17-alpine:///${DB_NAME:battleships-db}?${DB_PARAMS:}
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver

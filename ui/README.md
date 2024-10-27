@@ -22,9 +22,9 @@ It uses
 
 Configuration can be modified via [.env](.env) and [.env.local](.env.local) files or following environment variables.
 
-| Variable Name | Data Type | Description                        |
-|---------------|-----------|------------------------------------|
-| VITE_API_URL  | String    | Base URL for game server           |
+| Variable Name | Data Type | Description              |
+|---------------|-----------|--------------------------|
+| VITE_API_URL  | String    | Base URL for game server |
 
 ## Local Development
 

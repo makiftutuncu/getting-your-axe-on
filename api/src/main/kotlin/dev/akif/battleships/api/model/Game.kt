@@ -1,5 +1,6 @@
 package dev.akif.battleships.api.model
 
+import dev.akif.battleships.api.InvalidMoveException.Companion.validate
 import java.time.Instant
 
 data class Game(
@@ -33,9 +34,9 @@ data class Game(
     operator fun get(player: Player, x: Int, y: Int): Cell = boards.getValue(player)[x, y]
 
     fun playerJoined(player: Player, now: Instant): Game {
-        require(status == GameStatus.Created) { "Cannot join game $id because it is not in created state" }
+        validate(status == GameStatus.Created) { "Cannot join game $id because it is not in created state" }
 
-        require(player !in boards) { "Cannot join game $id because player $player has already joined" }
+        validate(player !in boards) { "Cannot join game $id because player $player has already joined" }
 
         return copy(
             boards = boards + (player to Board()),
@@ -45,11 +46,11 @@ data class Game(
     }
 
     fun shipPlaced(player: Player, ship: PlacedShip, now: Instant): Game {
-        require(status == GameStatus.Created) {
+        validate(status == GameStatus.Created) {
             "Cannot place ship because game $id is not in created state"
         }
 
-        require(ships[player].orEmpty().none { it.type == ship.type }) {
+        validate(ships[player].orEmpty().none { it.type == ship.type }) {
             "Cannot place ${ship.type} for player $player because it is already placed"
         }
 
@@ -64,12 +65,12 @@ data class Game(
     }
 
     fun started(now: Instant): Game {
-        require(status == GameStatus.Created) {
+        validate(status == GameStatus.Created) {
             "Cannot start game $id because it is not in created state"
         }
 
         Player.entries.forEach { p ->
-            require(ships[p].orEmpty().map { it.type }.toSet() == ShipType.entries.toSet()) {
+            validate(ships[p].orEmpty().map { it.type }.toSet() == ShipType.entries.toSet()) {
                 "Cannot start game because not Player $p has not placed all of their ships"
             }
         }
@@ -83,9 +84,9 @@ data class Game(
     }
 
     fun shot(player: Player, x: Int, y: Int, now: Instant): Pair<Game, Player?> {
-        require(status == GameStatus.Started) { "Cannot shoot because game $id is not started" }
+        validate(status == GameStatus.Started) { "Cannot shoot because game $id is not started" }
 
-        require(player == turn) { "Player $player cannot shoot because it is not their turn" }
+        validate(player == turn) { "Player $player cannot shoot because it is not their turn" }
 
         val otherPlayer = player.other
 

@@ -1,5 +1,6 @@
 package dev.akif.battleships.api.model
 
+import dev.akif.battleships.api.InvalidMoveException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -30,10 +31,10 @@ class GameTest {
             val game = Game.created(1, now)
                 .copy(status = GameStatus.Started)
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<InvalidMoveException> {
                 game.playerJoined(Player.A, now)
             }.apply {
-                assertEquals("Cannot join game 1 because it is not in created state", message)
+                assertEquals("Cannot join game 1 because it is not in created state", reason)
             }
         }
 
@@ -42,10 +43,10 @@ class GameTest {
             val game = Game.created(1, now)
                 .playerJoined(Player.A, now)
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<InvalidMoveException> {
                 game.playerJoined(Player.A, now)
             }.apply {
-                assertEquals("Cannot join game 1 because player A has already joined", message)
+                assertEquals("Cannot join game 1 because player A has already joined", reason)
             }
         }
 
@@ -66,7 +67,7 @@ class GameTest {
             val game = Game.created(1, now)
                 .copy(status = GameStatus.Started)
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<InvalidMoveException> {
                 game.shipPlaced(
                     Player.A,
                     PlacedShip(
@@ -77,7 +78,7 @@ class GameTest {
                     ), now
                 )
             }.apply {
-                assertEquals("Cannot place ship because game 1 is not in created state", message)
+                assertEquals("Cannot place ship because game 1 is not in created state", reason)
             }
         }
 
@@ -94,7 +95,7 @@ class GameTest {
                     ), now
                 )
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<InvalidMoveException> {
                 game.shipPlaced(
                     Player.A,
                     PlacedShip(
@@ -105,7 +106,7 @@ class GameTest {
                     ), now
                 )
             }.apply {
-                assertEquals("Cannot place Battleship for player A because it is already placed", message)
+                assertEquals("Cannot place Battleship for player A because it is already placed", reason)
             }
         }
 
@@ -137,10 +138,10 @@ class GameTest {
             val game = Game.created(1, now)
                 .copy(status = GameStatus.Started)
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<InvalidMoveException> {
                 game.started(now)
             }.apply {
-                assertEquals("Cannot start game 1 because it is not in created state", message)
+                assertEquals("Cannot start game 1 because it is not in created state", reason)
             }
         }
 
@@ -149,10 +150,10 @@ class GameTest {
             val game = Game.created(1, now)
                 .playerJoined(Player.A, now)
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<InvalidMoveException> {
                 game.started(now)
             }.apply {
-                assertEquals("Cannot start game because not Player A has not placed all of their ships", message)
+                assertEquals("Cannot start game because not Player A has not placed all of their ships", reason)
             }
         }
 
@@ -186,10 +187,10 @@ class GameTest {
             fun `the game is not started`() {
                 val game = Game.created(1, now)
 
-                assertThrows<IllegalArgumentException> {
+                assertThrows<InvalidMoveException> {
                     game.shot(Player.A, 0, 0, now)
                 }.apply {
-                    assertEquals("Cannot shoot because game 1 is not started", message)
+                    assertEquals("Cannot shoot because game 1 is not started", reason)
                 }
             }
 
@@ -200,10 +201,10 @@ class GameTest {
                     turn = Player.B
                 )
 
-                assertThrows<IllegalArgumentException> {
+                assertThrows<InvalidMoveException> {
                     game.shot(Player.A, 0, 0, now)
                 }.apply {
-                    assertEquals("Player A cannot shoot because it is not their turn", message)
+                    assertEquals("Player A cannot shoot because it is not their turn", reason)
                 }
             }
 
@@ -231,10 +232,10 @@ class GameTest {
                                 )
                     )
 
-                assertThrows<IllegalArgumentException> {
+                assertThrows<InvalidMoveException> {
                     game.shot(Player.B, 0, 0, now)
                 }.apply {
-                    assertEquals("Player B cannot shoot at (0, 0) because it has already been shot", message)
+                    assertEquals("Player B cannot shoot at (0, 0) because it has already been shot", reason)
                 }
             }
         }

@@ -1,5 +1,6 @@
 package dev.akif.battleships.api.model
 
+import dev.akif.battleships.api.InvalidMoveException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -27,16 +28,16 @@ class BoardTest {
             fun `x coordinate is invalid`() {
                 val board = Board()
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(-1, 0, Direction.Horizontal, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Invalid x coordinate: -1", message)
+                    assertEquals("Invalid x coordinate: -1", reason)
                 }
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(10, 0, Direction.Horizontal, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Invalid x coordinate: 10", message)
+                    assertEquals("Invalid x coordinate: 10", reason)
                 }
             }
 
@@ -44,16 +45,16 @@ class BoardTest {
             fun `y coordinate is invalid`() {
                 val board = Board()
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(0, -1, Direction.Horizontal, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Invalid y coordinate: -1", message)
+                    assertEquals("Invalid y coordinate: -1", reason)
                 }
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(0, 10, Direction.Horizontal, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Invalid y coordinate: 10", message)
+                    assertEquals("Invalid y coordinate: 10", reason)
                 }
             }
 
@@ -61,10 +62,10 @@ class BoardTest {
             fun `ship does not fit horizontally`() {
                 val board = Board()
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(9, 0, Direction.Horizontal, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Cannot place Carrier horizontally at (9, 0) because it does not fit", message)
+                    assertEquals("Cannot place Carrier horizontally at (9, 0) because it does not fit", reason)
                 }
             }
 
@@ -72,10 +73,10 @@ class BoardTest {
             fun `placing ship horizontally if coordinates are already occupied`() {
                 val board = Board().shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(2, 0, Direction.Horizontal, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Cannot place Carrier horizontally at (2, 0) because it is already occupied", message)
+                    assertEquals("Cannot place Carrier horizontally at (2, 0) because it is already occupied", reason)
                 }
             }
 
@@ -83,10 +84,10 @@ class BoardTest {
             fun `ship does not fit vertically`() {
                 val board = Board()
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(0, 9, Direction.Vertical, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Cannot place Carrier vertically at (0, 9) because it does not fit", message)
+                    assertEquals("Cannot place Carrier vertically at (0, 9) because it does not fit", reason)
                 }
             }
 
@@ -94,10 +95,10 @@ class BoardTest {
             fun `placing ship vertically if coordinates are already occupied`() {
                 val board = Board().shipPlaced(Player.A, PlacedShip(0, 0, Direction.Vertical, ShipType.Carrier))
 
-                assertThrows(IllegalArgumentException::class.java) {
+                assertThrows(InvalidMoveException::class.java) {
                     board.shipPlaced(Player.A, PlacedShip(0, 2, Direction.Vertical, ShipType.Carrier))
                 }.apply {
-                    assertEquals("Cannot place Carrier vertically at (0, 2) because it is already occupied", message)
+                    assertEquals("Cannot place Carrier vertically at (0, 2) because it is already occupied", reason)
                 }
             }
         }
@@ -139,10 +140,10 @@ class BoardTest {
         fun `fails when shooting at an already shot cell`() {
             val (board, _) = Board().shot(Player.A, 0, 0)
 
-            assertThrows(IllegalArgumentException::class.java) {
+            assertThrows(InvalidMoveException::class.java) {
                 board.shot(Player.A, 0, 0)
             }.apply {
-                assertEquals("Player A cannot shoot at (0, 0) because it has already been shot", message)
+                assertEquals("Player A cannot shoot at (0, 0) because it has already been shot", reason)
             }
         }
 
@@ -150,10 +151,10 @@ class BoardTest {
         fun `fails when shooting at a cell with player's own ship`() {
             val board = Board().shipPlaced(Player.A, PlacedShip(0, 0, Direction.Horizontal, ShipType.Carrier))
 
-            assertThrows(IllegalArgumentException::class.java) {
+            assertThrows(InvalidMoveException::class.java) {
                 board.shot(Player.A, 0, 0)
             }.apply {
-                assertEquals("Player A cannot shoot at (0, 0) because they have a ship there", message)
+                assertEquals("Player A cannot shoot at (0, 0) because they have a ship there", reason)
             }
         }
 
