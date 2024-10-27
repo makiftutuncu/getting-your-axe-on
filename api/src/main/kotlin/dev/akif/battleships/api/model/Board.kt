@@ -1,5 +1,7 @@
 package dev.akif.battleships.api.model
 
+import dev.akif.battleships.api.InvalidMoveException.Companion.validate
+
 data class Board(val cells: Array<Array<Cell>>) {
     companion object {
         const val SIZE: Int = 10
@@ -18,24 +20,24 @@ data class Board(val cells: Array<Array<Cell>>) {
         val (x, y, direction, type) = ship
         val size = type.size
 
-        require(x in 0 until SIZE) { "Invalid x coordinate: $x" }
-        require(y in 0 until SIZE) { "Invalid y coordinate: $y" }
+        validate(x in 0 until SIZE) { "Invalid x coordinate: $x" }
+        validate(y in 0 until SIZE) { "Invalid y coordinate: $y" }
 
         when (direction) {
             Direction.Horizontal -> {
-                require(x + size <= SIZE) {
+                validate(x + size <= SIZE) {
                     "Cannot place ${type.name} horizontally at ($x, $y) because it does not fit"
                 }
-                require((x until (x + size)).all { this[it, y] == Cell.Empty }) {
+                validate((x until (x + size)).all { this[it, y] == Cell.Empty }) {
                     "Cannot place ${type.name} horizontally at ($x, $y) because it is already occupied"
                 }
             }
 
             Direction.Vertical -> {
-                require(y + size <= SIZE) {
+                validate(y + size <= SIZE) {
                     "Cannot place ${type.name} vertically at ($x, $y) because it does not fit"
                 }
-                require((y until (y + size)).all { this[x, it] == Cell.Empty }) {
+                validate((y until (y + size)).all { this[x, it] == Cell.Empty }) {
                     "Cannot place ${type.name} vertically at ($x, $y) because it is already occupied"
                 }
             }
@@ -64,11 +66,11 @@ data class Board(val cells: Array<Array<Cell>>) {
     }
 
     fun shot(player: Player, x: Int, y: Int): Pair<Board, Cell> {
-        require(this[x, y] != Cell.Hit && this[x, y] != Cell.Miss) {
+        validate(this[x, y] != Cell.Hit && this[x, y] != Cell.Miss) {
             "Player $player cannot shoot at ($x, $y) because it has already been shot"
         }
 
-        require(
+        validate(
             when (player) {
                 Player.A -> this[x, y] != Cell.ShipA
                 Player.B -> this[x, y] != Cell.ShipB

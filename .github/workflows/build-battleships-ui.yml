@@ -1,17 +1,13 @@
 name: Build battleships-ui
 
 on:
-  push:
-    branches:
-      - '*'
-    paths:
-      - 'ui/**'
   workflow_dispatch:
   pull_request:
     branches:
       - 'main'
     paths:
       - 'ui/**'
+      - 'compose.yml'
 
 jobs:
   build:

@@ -14,11 +14,12 @@ Battleships API is a game server for the Battleships game.
 It uses
 
 * Maven for builds
-* Spring Boot WebFlux 3 for web backend
+* Spring Boot 3 WebFlux for web backend
 * Kotlin 2 for programming language
 * Axon Framework for event sourcing
-* PostgreSQL for database
+* PostgreSQL 17 for database
 * Spring Data JPA for database access
+* Flyway for database schema migrations
 * JUnit 5 for testing
 
 ## Configuration
@@ -28,7 +29,7 @@ Configuration can be modified via [application.yml](src/main/resources/applicati
 | Variable Name | Data Type | Description                          | Required                               |
 |---------------|-----------|--------------------------------------|----------------------------------------|
 | DB_HOST       | String    | Host address of application database | No, defaults to `localhost`            |
-| DB_PORT       | Integer   | Port of application database         | No, defaults to `5432`                |
+| DB_PORT       | Integer   | Port of application database         | No, defaults to `5432`                 |
 | DB_NAME       | String    | Name of application database         | No, defaults to `battleships-db`       |
 | DB_USER       | String    | User of application database         | No, defaults to `battleships-user`     |
 | DB_PASS       | String    | Password of application database     | No, defaults to `battleships-password` |

@@ -8,7 +8,6 @@ class GameNotFoundException(id: Long): ResponseStatusException(
     "Game $id is not found"
 )
 
-// TODO: Replace uses of `require` with this
 class InvalidMoveException(message: String): ResponseStatusException(
     HttpStatus.BAD_REQUEST,
     message

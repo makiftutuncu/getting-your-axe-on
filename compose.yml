@@ -14,20 +14,21 @@ services:
       - battleships-network
   battleships-api:
     container_name: battleships-api
-    build: .
+    build:
+      context: api
+      args:
+        - "DB_HOST=battleships-db"
+        - "DB_PORT=5432"
+        - "DB_NAME=battleships-db"
+        - "DB_USER=battleships-user"
+        - "DB_PASS=battleships-password"
+        - "DB_PARAMS="
     depends_on:
       - battleships-db
     ports:
       - "8080:8080"
     networks:
       - battleships-network
-    environment:
-      - "DB_HOST=battleships-db"
-      - "DB_PORT=5432"
-      - "DB_NAME=battleships-db"
-      - "DB_USER=battleships-user"
-      - "DB_PASS=battleships-password"
-      - "DB_PARAMS="
   battleships-ui:
     container_name: battleships-ui
     build:
